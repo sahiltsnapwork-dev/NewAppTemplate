@@ -1,0 +1,5 @@
+{
+  "diBootstrap": "// diBootstrap snippet: register createSearchThunkExtra and SearchRepository.\nimport { registerSearchRepository } from 'features/searchStock/repository/searchRepository';\n// TODO: integrate into app DI container",
+  "createThunkExtra": "// createSearchThunkExtra placeholder",
+  "violations": []
+}

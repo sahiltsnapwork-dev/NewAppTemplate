@@ -1,0 +1,7 @@
+{
+  "entities": ["SearchResult"],
+  "usecases": ["searchStocks(query: string) -> Datum[]"],
+  "interfaces": ["ISearchRepository"],
+  "violations": [],
+  "features": ["searchStock"]
+}

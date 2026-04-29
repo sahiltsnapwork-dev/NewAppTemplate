@@ -1,0 +1,10 @@
+{
+  "fileName": "api_info.md",
+  "content": "See api_info.md",
+  "apiList": [
+    { "name": "searchStocks", "method": "GET", "path": "/api/v1/searchengine/v2/search", "params": ["searchText"] }
+  ],
+  "violations": [],
+  "featureName": "searchStock",
+  "totalApis": 1
+}

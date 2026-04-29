@@ -1,0 +1,9 @@
+{
+  "styleSheetEntries": [
+    {
+      "component": "SearchStockScreen",
+      "styles": ["container","input","item","title","subtitle"]
+    }
+  ],
+  "violations": []
+}

@@ -1,0 +1,16 @@
+{
+  "endpoints": [
+    {
+      "name": "searchStocks",
+      "method": "GET",
+      "path": "/api/v1/searchengine/v2/search",
+      "queryParams": ["searchText"],
+      "headers": ["Accept: application/json"],
+      "repositoryMethod": "getSearchStocks"
+    }
+  ],
+  "confirmedBaseUrl": "https://irmbla.hdfcsec.com",
+  "violations": [],
+  "fidelityReport": [],
+  "discrepancyLog": []
+}

@@ -7,6 +7,7 @@
 
 import { NewAppScreen } from '@react-native/new-app-screen';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import SearchStockScreen from './features/searchStock/presentation/screens/SearchStockScreen';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -28,10 +29,8 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+      {/* Render SearchStockScreen for verification of the converted feature */}
+      <SearchStockScreen />
     </View>
   );
 }

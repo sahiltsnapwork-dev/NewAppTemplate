@@ -1,0 +1,10 @@
+{
+  "valid": true,
+  "files": [
+    { "path": "features/searchStock/presentation/screens/SearchStockScreen.tsx" },
+    { "path": "features/searchStock/repository/searchRepository.ts" },
+    { "path": "features/searchStock/api/searchService.ts" },
+    { "path": "features/searchStock/api/searchClient.ts" }
+  ],
+  "issues": []
+}

@@ -1,0 +1,11 @@
+{
+  "convertedLayouts": [
+    {
+      "component": "SearchStockScreen",
+      "layouts": [
+        { "type": "Column", "children": ["TextField", "Expanded(ListView)"] }
+      ]
+    }
+  ],
+  "violations": []
+}

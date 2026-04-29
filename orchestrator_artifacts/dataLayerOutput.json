@@ -1,0 +1,6 @@
+{
+  "repositoryImpls": ["features/searchStock/repository/searchRepository.ts"],
+  "apiDataSources": ["features/searchStock/api/searchService.ts"],
+  "mappers": [],
+  "violations": []
+}

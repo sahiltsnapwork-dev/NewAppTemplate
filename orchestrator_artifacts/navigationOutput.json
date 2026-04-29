@@ -1,0 +1,5 @@
+{
+  "paramList": {"SearchStock": {"query": "string | optional"}},
+  "convertedCalls": [],
+  "violations": []
+}

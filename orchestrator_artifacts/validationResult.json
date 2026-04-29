@@ -1,0 +1,5 @@
+{
+  "valid": true,
+  "issues": [],
+  "notes": "Basic environment checks passed: .env present, API client wired to API_BASE_URL"
+}

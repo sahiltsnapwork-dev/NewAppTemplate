@@ -1,0 +1,7 @@
+{
+  "slice": "SearchStockLocalState",
+  "thunks": [],
+  "selectors": [],
+  "notes": "Converted with local hook-based state (use getSearchStocks repository). For full Redux mapping, run redux-state-generator.",
+  "violations": []
+}

@@ -1,0 +1,7 @@
+[
+  { "checkName": "component-contract-validation", "passed": true, "issues": [] },
+  { "checkName": "navigation-behavior-validation", "passed": true, "issues": [] },
+  { "checkName": "api-contract-readiness", "passed": true, "issues": [] },
+  { "checkName": "dependency-validation", "passed": false, "issues": [{ "severity": "WARN", "message": "diBootstrap.ts was not generated as a file; DI snippet provided in diOutput.json" }] },
+  { "checkName": "typescript-validation", "passed": true, "issues": [] }
+]

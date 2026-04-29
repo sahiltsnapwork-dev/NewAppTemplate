@@ -1,0 +1,5 @@
+{
+  "folders": ["features/searchStock/presentation/screens","features/searchStock/api","features/searchStock/repository"],
+  "indexFiles": ["features/searchStock/index.ts"],
+  "violations": []
+}

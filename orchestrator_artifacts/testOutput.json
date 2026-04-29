@@ -1,0 +1,6 @@
+{
+  "valid": true,
+  "testFiles": ["features/searchStock/presentation/screens/SearchStockScreen.test.tsx"],
+  "mswHandlers": [],
+  "violations": []
+}

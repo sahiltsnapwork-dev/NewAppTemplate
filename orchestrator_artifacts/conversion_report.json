@@ -1,0 +1,35 @@
+{
+  "pipelineId": "orchestrator-searchStock-001",
+  "moduleName": "searchStock",
+  "startedAt": "2026-04-28T00:00:00.000Z",
+  "completedAt": "2026-04-28T00:00:00.000Z",
+  "status": "warnings",
+  "stepsExecuted": [
+    { "stepNumber": 1, "stepName": "Constitution Reader", "status": "completed" },
+    { "stepNumber": 2, "stepName": "Flutter Module and Component Analyzer", "status": "completed" },
+    { "stepNumber": 3, "stepName": "UI Structure Mapper", "status": "completed" },
+    { "stepNumber": 4, "stepName": "Layout Converter", "status": "completed" },
+    { "stepNumber": 5, "stepName": "Styling and Theme Extractor", "status": "completed" },
+    { "stepNumber": 6, "stepName": "Business Logic Extractor", "status": "completed" },
+    { "stepNumber": 7, "stepName": "State Management Mapper", "status": "completed" },
+    { "stepNumber": 8, "stepName": "Navigation Mapper", "status": "completed" },
+    { "stepNumber": 9, "stepName": "Asset and Resource Mapper", "status": "completed" },
+    { "stepNumber": 10, "stepName": "API Integration Mapper", "status": "completed" },
+    { "stepNumber": 11, "stepName": "Data Layer Builder", "status": "completed" },
+    { "stepNumber": 12, "stepName": "Dependency Injector", "status": "completed" },
+    { "stepNumber": 13, "stepName": "React Native Component Generator", "status": "completed" },
+    { "stepNumber": 14, "stepName": "Code Quality and Accessibility Enhancer", "status": "completed" },
+    { "stepNumber": 15, "stepName": "Test Generator", "status": "completed" },
+    { "stepNumber": 16, "stepName": "React Native Environment Validator", "status": "completed" },
+    { "stepNumber": 17, "stepName": "API Execution Trace Documentation", "status": "completed" },
+    { "stepNumber": 18, "stepName": "Environment Configuration Generator", "status": "completed" }
+  ],
+  "errors": [],
+  "warnings": [
+    "diBootstrap.ts not generated as a file; DI snippet provided in diOutput.json"
+  ],
+  "preFinalChecks": "See orchestrator_artifacts/preFinalResults.json",
+  "consistencyIssues": "See orchestrator_artifacts/consistencyIssues.json",
+  "validationReport": "orchestrator_artifacts/conversion_validation.md",
+  "validationStatus": "warnings"
+}

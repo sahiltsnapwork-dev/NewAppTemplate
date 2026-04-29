@@ -1,0 +1,6 @@
+{
+  "envFileContent": "API_BASE_URL=https://irmbla.hdfcsec.com\n",
+  "envExampleContent": "API_BASE_URL=YOUR_API_BASE_URL_HERE\n",
+  "requiredKeys": ["API_BASE_URL"],
+  "violations": []
+}

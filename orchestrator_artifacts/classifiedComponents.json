@@ -1,0 +1,17 @@
+{
+  "presentation": {
+    "screens": [
+      {
+        "name": "SearchStockScreen",
+        "path": "features/searchStock/presentation/screens/SearchStockScreen.tsx",
+        "widgets": ["AppBar", "TextField", "ListView", "ListTile"]
+      }
+    ]
+  },
+  "domainLogic": {
+    "blocs": ["SearchStocksBloc (mapped to hook/state)"]
+  },
+  "apiLayer": {
+    "repositories": ["GetSearchStockResultsRepo -> features/searchStock/repository/searchRepository.ts"]
+  }
+}

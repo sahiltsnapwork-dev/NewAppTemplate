@@ -1,0 +1,8 @@
+[
+  {
+    "severity": "WARN",
+    "check": "api-vs-state-thunks",
+    "message": "API endpoint 'searchStocks' has no corresponding thunk in the state layer (state implemented with local hooks).",
+    "affectedArtifacts": ["apiOutput", "stateOutput"]
+  }
+]
