@@ -1,0 +1,14 @@
+[
+  { "label": "P/E Ratio",    "value": "16.73",          "type": "valuation" },
+  { "label": "P/B Ratio",    "value": "2.22",           "type": "valuation" },
+  { "label": "ROE",          "value": "15.02%",         "type": "valuation" },
+  { "label": "EPS (TTM)",    "value": "₹48.40",         "type": "valuation" },
+  { "label": "Div Yield",    "value": "0.62%",          "type": "valuation" },
+  { "label": "Market Cap",   "value": "₹12,46,709 Cr",  "type": "valuation" },
+  { "label": "52W High",     "value": "₹1,020.50",      "type": "other"     },
+  { "label": "52W Low",      "value": "₹726.65",        "type": "other"     },
+  { "label": "Face Value",   "value": "₹1.00",          "type": "other"     },
+  { "label": "Delivery %",   "value": "64.30%",         "type": "delivery"  },
+  { "label": "Volume",       "value": "1,22,56,176",    "type": "delivery"  },
+  { "label": "Avg Traded Px","value": "₹813.86",        "type": "delivery"  }
+]

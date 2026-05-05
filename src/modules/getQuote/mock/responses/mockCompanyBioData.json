@@ -1,0 +1,21 @@
+{
+  "companyName": "HDFC Bank Ltd",
+  "description": "HDFC Bank Limited is India's largest private sector bank by assets. Incorporated in 1994, the bank offers a wide range of banking products and financial services for corporate and retail customers through a variety of delivery channels and specialised subsidiaries. It provides retail banking, wholesale banking, treasury operations, and other banking services.",
+  "website": "https://www.hdfcbank.com",
+  "headquarters": "Mumbai, Maharashtra",
+  "founded": "1994",
+  "employees": 186000,
+  "ceo": "Sashidhar Jagdishan",
+  "chairman": "Atanu Chakraborty",
+  "boardMembers": [
+    "Atanu Chakraborty (Chairman)",
+    "Sashidhar Jagdishan (MD & CEO)",
+    "Kaizad Bharucha (Deputy MD)",
+    "Lily Vadera (Independent Director)",
+    "Sandeep Parekh (Independent Director)",
+    "Renu Karnad (Independent Director)"
+  ],
+  "industry": "Banks",
+  "subsector": "Private Sector Banks",
+  "services": ["Retail Banking", "Corporate Banking", "Treasury", "NRI Banking", "Loans", "Cards", "Insurance"]
+}

@@ -1,0 +1,9 @@
+[
+  { "type": "Pivot", "value": 812.95, "strength": 3 },
+  { "type": "R1",    "value": 822.55, "strength": 2 },
+  { "type": "R2",    "value": 833.10, "strength": 1 },
+  { "type": "R3",    "value": 845.65, "strength": 0 },
+  { "type": "S1",    "value": 802.40, "strength": 2 },
+  { "type": "S2",    "value": 791.85, "strength": 1 },
+  { "type": "S3",    "value": 780.30, "strength": 0 }
+]

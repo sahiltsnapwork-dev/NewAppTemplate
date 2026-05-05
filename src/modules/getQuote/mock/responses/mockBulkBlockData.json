@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "dealId": "bulk001",
+      "symbol": "HDFCBANK",
+      "dealQuantity": 1500000,
+      "dealPrice": 812.50,
+      "date": "2026-04-16",
+      "buyerName": "Mirae Asset Mutual Fund",
+      "sellerName": null,
+      "type": "Bulk",
+      "exchange": "NSE"
+    },
+    {
+      "dealId": "block001",
+      "symbol": "HDFCBANK",
+      "dealQuantity": 750000,
+      "dealPrice": 810.00,
+      "date": "2026-04-15",
+      "buyerName": "HDFC Mutual Fund",
+      "sellerName": "Foreign Portfolio Investor",
+      "type": "Block",
+      "exchange": "NSE"
+    }
+  ]
+}

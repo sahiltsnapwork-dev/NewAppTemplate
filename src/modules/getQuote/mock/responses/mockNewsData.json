@@ -1,0 +1,37 @@
+{
+  "data": [
+    {
+      "id": "news001",
+      "headline": "HDFC Bank reports strong Q4 results, net profit up 18%",
+      "content": "HDFC Bank Ltd reported a net profit of Rs 17,616 crore for the quarter ended March 2026, up 18% year-on-year.",
+      "source": "Economic Times",
+      "publishedDate": "2026-04-15T09:30:00",
+      "link": "https://economictimes.indiatimes.com/hdfc-bank-q4-results",
+      "imageUrl": null,
+      "type": "news",
+      "cmotId": "4987"
+    },
+    {
+      "id": "news002",
+      "headline": "HDFC Bank announces Rs 5 dividend for FY26",
+      "content": "The board of HDFC Bank Ltd has recommended a dividend of Rs 5 per equity share for FY2025-26.",
+      "source": "Business Standard",
+      "publishedDate": "2026-04-14T14:00:00",
+      "link": null,
+      "imageUrl": null,
+      "type": "news",
+      "cmotId": "4987"
+    },
+    {
+      "id": "news003",
+      "headline": "RBI keeps repo rate unchanged at 6.25%",
+      "content": "The Reserve Bank of India maintained the benchmark repo rate at 6.25% in its latest monetary policy meeting.",
+      "source": "Mint",
+      "publishedDate": "2026-04-12T11:00:00",
+      "link": null,
+      "imageUrl": null,
+      "type": "news",
+      "cmotId": "4987"
+    }
+  ]
+}

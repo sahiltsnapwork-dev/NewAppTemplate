@@ -1,0 +1,8 @@
+[
+  { "duration": "1D", "performance": "0.14", "color": "#079b39", "open": 818.0, "high": 820.05, "low": 809.75, "close": 811.0, "volume": 12256176, "date": "2026-04-16" },
+  { "duration": "5D", "performance": "-1.25", "color": "#ea4747", "open": 822.0, "high": 828.0, "low": 806.0, "close": 811.0, "volume": 58000000, "date": "2026-04-12" },
+  { "duration": "1M", "performance": "3.80", "color": "#079b39", "open": 781.0, "high": 830.0, "low": 762.0, "close": 811.0, "volume": 250000000, "date": "2026-03-16" },
+  { "duration": "3M", "performance": "-8.50", "color": "#ea4747", "open": 886.0, "high": 900.0, "low": 726.0, "close": 811.0, "volume": 780000000, "date": "2026-01-16" },
+  { "duration": "6M", "performance": "-15.20", "color": "#ea4747", "open": 957.0, "high": 980.0, "low": 726.0, "close": 811.0, "volume": 1560000000, "date": "2025-10-16" },
+  { "duration": "1Y", "performance": "-20.60", "color": "#ea4747", "open": 1021.0, "high": 1020.5, "low": 726.0, "close": 811.0, "volume": 3100000000, "date": "2025-04-16" }
+]

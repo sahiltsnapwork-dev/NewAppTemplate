@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "eventId": "evt001",
+      "eventType": "BOARD_MEETING",
+      "title": "Board Meeting - Q4 FY26 Results",
+      "description": "Board meeting to consider and approve the audited financial results for Q4 FY2025-26",
+      "eventDate": "2026-04-15T00:00:00",
+      "importance": "High",
+      "impact": 3.0
+    },
+    {
+      "eventId": "evt002",
+      "eventType": "DIVIDEND",
+      "title": "Dividend Declaration",
+      "description": "Final dividend of Rs 5 per share for FY2025-26 declared",
+      "eventDate": "2026-01-17T00:00:00",
+      "importance": "Medium",
+      "impact": 1.5
+    },
+    {
+      "eventId": "evt003",
+      "eventType": "AGM",
+      "title": "Annual General Meeting",
+      "description": "30th Annual General Meeting of HDFC Bank Limited",
+      "eventDate": "2026-06-20T00:00:00",
+      "importance": "Low",
+      "impact": 0.5
+    }
+  ]
+}
