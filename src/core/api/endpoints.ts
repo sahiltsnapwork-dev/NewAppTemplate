@@ -6,6 +6,12 @@
 // These are endpoint PATH constants only — base URL is injected by apiClient
 
 export const ORDER_BOOK_ENDPOINTS = {
+  // API #0 – Open API: OrderBook (mb-wrapper format)
+  // Full absolute URL — different host from apiClient baseURL.
+  // Android emulator: 10.0.2.2 maps to the host machine's localhost.
+  // Physical device: replace with your machine's LAN IP (e.g. http://192.168.1.x:9092/...)
+  ORDER_BOOK_OPEN_API: 'http://10.0.2.2:9092/api/v1/book-services/OrderBook',
+
   // API #1 – V2 Order Book by status (Open/Closed/GTD)
   ORDER_BOOK_V2: '/orderBookApiV2',
 

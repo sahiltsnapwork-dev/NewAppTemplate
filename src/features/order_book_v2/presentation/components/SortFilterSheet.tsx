@@ -1,6 +1,7 @@
 // Component: SortFilterSheet + FilterChipRow
 // Source: sort_filter_sheet.dart / filter_chip_row.dart
-// Filter bottom sheet for exchange / action / product / status + sort
+// Figma: node 13929:49417 – Sort and filter bottom sheet
+// Left sidebar categories + right radio options + Clear all / Apply buttons
 
 import React, { useState } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+
 export interface OrderBookFilters {
   exchange: string;
   action: string;
@@ -26,17 +28,35 @@ interface Props {
   onDismiss: () => void;
 }
 
-const EXCHANGE_OPTIONS = ['ALL', 'NSE', 'BSE'];
-const ACTION_OPTIONS = ['ALL', 'BUY', 'SELL'];
-const PRODUCT_OPTIONS = ['ALL', 'MIS', 'CNC', 'NRML'];
-const STATUS_OPTIONS = ['ALL', 'Pending', 'Traded', 'Cancelled', 'Rejected'];
-const SORT_OPTIONS = ['LATEST_FIRST', 'OLDEST_FIRST', 'SYMBOL_A_Z', 'SYMBOL_Z_A'];
+const CATEGORIES = [
+  { key: 'sortBy',   label: 'Sort' },
+  { key: 'status',   label: 'Status' },
+  { key: 'action',   label: 'Transaction' },
+  { key: 'product',  label: 'Product' },
+  { key: 'exchange', label: 'Exchange' },
+];
+
+const CATEGORY_OPTIONS: Record<string, string[]> = {
+  sortBy:   ['Alphabetically : A-Z', 'Alphabetically : Z-A', 'Order Value : high to low', 'Order Value : low to high', 'Quantity : high to low', 'Quantity : low to high', 'LTP : high To Low', 'LTP : low to high'],
+  status:   ['ALL', 'Pending', 'Traded', 'Cancelled', 'Rejected'],
+  action:   ['ALL', 'BUY', 'SELL'],
+  product:  ['ALL', 'MIS', 'CNC', 'NRML'],
+  exchange: ['ALL', 'NSE', 'BSE'],
+};
+
+const DEFAULT_FILTERS: OrderBookFilters = {
+  exchange: 'ALL', action: 'ALL', product: 'ALL', status: 'ALL', sortBy: 'Alphabetically : A-Z',
+};
 
 const SortFilterSheet: React.FC<Props> = ({ visible, currentFilters, onApply, onDismiss }) => {
   const [filters, setFilters] = useState<OrderBookFilters>(currentFilters);
+  const [activeCategory, setActiveCategory] = useState<string>('sortBy');
 
   const update = (key: keyof OrderBookFilters, val: string) =>
     setFilters((f) => ({ ...f, [key]: val }));
+
+  const currentOptions = CATEGORY_OPTIONS[activeCategory] ?? [];
+  const currentValue = filters[activeCategory as keyof OrderBookFilters];
 
   return (
     <Modal
@@ -50,84 +70,83 @@ const SortFilterSheet: React.FC<Props> = ({ visible, currentFilters, onApply, on
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onDismiss} activeOpacity={1} />
         <View style={styles.sheet}>
-          <View style={styles.handle} />
-          <Text style={styles.title}>Sort & Filter</Text>
+          {/* Handle + Header */}
+          <View style={styles.headerRow}>
+            <Text style={styles.title}>SORT AND FILTER</Text>
+            <TouchableOpacity style={styles.closeBtn} onPress={onDismiss} accessibilityLabel="Close">
+              <Text style={styles.closeBtnText}>✕</Text>
+            </TouchableOpacity>
+          </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <FilterSection
-              label="Exchange"
-              options={EXCHANGE_OPTIONS}
-              selected={filters.exchange ?? 'ALL'}
-              onSelect={(v) => update('exchange', v)}
-            />
-            <FilterSection
-              label="Action"
-              options={ACTION_OPTIONS}
-              selected={filters.action ?? 'ALL'}
-              onSelect={(v) => update('action', v)}
-            />
-            <FilterSection
-              label="Product"
-              options={PRODUCT_OPTIONS}
-              selected={filters.product ?? 'ALL'}
-              onSelect={(v) => update('product', v)}
-            />
-            <FilterSection
-              label="Status"
-              options={STATUS_OPTIONS}
-              selected={filters.status ?? 'ALL'}
-              onSelect={(v) => update('status', v)}
-            />
-            <FilterSection
-              label="Sort By"
-              options={SORT_OPTIONS}
-              selected={filters.sortBy ?? 'LATEST_FIRST'}
-              onSelect={(v) => update('sortBy', v)}
-            />
-          </ScrollView>
+          {/* Body: left sidebar + right radio options */}
+          <View style={styles.body}>
+            {/* Left sidebar – category list */}
+            <View style={styles.sidebar}>
+              {CATEGORIES.map((cat) => (
+                <TouchableOpacity
+                  key={cat.key}
+                  style={[styles.sidebarItem, activeCategory === cat.key && styles.sidebarItemActive]}
+                  onPress={() => setActiveCategory(cat.key)}
+                >
+                  <Text style={[styles.sidebarText, activeCategory === cat.key && styles.sidebarTextActive]}>
+                    {cat.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
+            {/* Vertical divider */}
+            <View style={styles.divider} />
+
+            {/* Right – radio options */}
+            <ScrollView style={styles.optionsArea} showsVerticalScrollIndicator={false}>
+              {currentOptions.map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  style={styles.radioRow}
+                  onPress={() => update(activeCategory as keyof OrderBookFilters, opt)}
+                >
+                  <View style={[styles.radioOuter, currentValue === opt && styles.radioOuterActive]}>
+                    {currentValue === opt && <View style={styles.radioInner} />}
+                  </View>
+                  <Text style={styles.radioLabel}>{opt}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Bottom buttons: Clear all + Apply */}
           <View style={styles.actionRow}>
             <TouchableOpacity
-              style={styles.resetBtn}
-              onPress={() =>
-                setFilters({ exchange: 'ALL', action: 'ALL', product: 'ALL', status: 'ALL', sortBy: 'LATEST_FIRST' })
-              }
+              style={styles.clearBtn}
+              onPress={() => setFilters(DEFAULT_FILTERS)}
+              accessibilityLabel="Clear all filters"
             >
-              <Text style={styles.resetBtnText}>Reset</Text>
+              <Text style={styles.clearBtnText}>Clear all</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.applyBtn}
               onPress={() => { onApply(filters); onDismiss(); }}
+              accessibilityLabel="Apply filters"
             >
               <Text style={styles.applyBtnText}>Apply</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Home indicator */}
+          <View style={styles.homeIndicator} />
         </View>
       </View>
     </Modal>
   );
 };
 
-interface FilterSectionProps {
-  label: string;
-  options: string[];
-  selected: string;
-  onSelect: (v: string) => void;
-}
-
-const FilterSection: React.FC<FilterSectionProps> = ({ label, options, selected, onSelect }) => (
-  <View style={styles.section}>
-    <Text style={styles.sectionLabel}>{label}</Text>
-    <FilterChipRow options={options} selected={selected} onSelect={onSelect} />
-  </View>
-);
-
+// Keep FilterChipRow exported for backward compat
 interface FilterChipRowProps {
   options: string[];
   selected: string;
   onSelect: (v: string) => void;
 }
-
 export const FilterChipRow: React.FC<FilterChipRowProps> = ({ options, selected, onSelect }) => (
   <View style={styles.chipRow}>
     {options.map((opt) => (
@@ -137,9 +156,7 @@ export const FilterChipRow: React.FC<FilterChipRowProps> = ({ options, selected,
         onPress={() => onSelect(opt)}
         accessibilityLabel={`Select ${opt}`}
       >
-        <Text style={[styles.chipText, selected === opt && styles.chipTextActive]}>
-          {opt}
-        </Text>
+        <Text style={[styles.chipText, selected === opt && styles.chipTextActive]}>{opt}</Text>
       </TouchableOpacity>
     ))}
   </View>
@@ -147,60 +164,126 @@ export const FilterChipRow: React.FC<FilterChipRowProps> = ({ options, selected,
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 20,
-    paddingBottom: 36,
+    backgroundColor: '#f6f6f6',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 8,
     maxHeight: '80%',
   },
-  handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#DDDDDD',
-    alignSelf: 'center',
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  title: { fontSize: 14, fontWeight: '700', color: '#141e55', lineHeight: 22 },
+  closeBtn: {
+    width: 18,
+    height: 18,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: '#111e58',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnText: { fontSize: 10, color: '#111e58', lineHeight: 14 },
+  body: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#f1f1f1',
+    borderRadius: 10,
+    marginHorizontal: 16,
+    height: 341,
+    overflow: 'hidden',
+  },
+  sidebar: {
+    width: 116,
+    paddingVertical: 0,
+  },
+  sidebarItem: {
+    height: 29,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    borderRadius: 5,
+  },
+  sidebarItemActive: {
+    backgroundColor: '#e8e9f0',
+  },
+  sidebarText: { fontSize: 14, color: '#888fac', lineHeight: 17 },
+  sidebarTextActive: { fontSize: 14, fontWeight: '700', color: '#111e58', lineHeight: 22 },
+  divider: { width: 1, backgroundColor: '#f1f1f1', marginVertical: 8 },
+  optionsArea: { flex: 1, paddingVertical: 4, paddingHorizontal: 12 },
+  radioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginBottom: 12,
   },
-  title: { fontSize: 17, fontWeight: '700', color: '#1A1A2E', marginBottom: 16 },
-
-  section: { marginBottom: 16 },
-  sectionLabel: { fontSize: 13, color: '#888888', marginBottom: 8, fontWeight: '500' },
-
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    backgroundColor: '#F0F0F0',
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#888fac',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chipActive: { backgroundColor: '#0066CC' },
-  chipText: { fontSize: 12, color: '#666666', fontWeight: '500' },
-  chipTextActive: { color: '#FFFFFF' },
-
-  actionRow: { flexDirection: 'row', gap: 10, marginTop: 16 },
-  resetBtn: {
+  radioOuterActive: { borderColor: '#2541be' },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#2541be',
+  },
+  radioLabel: { fontSize: 11, color: '#000000', lineHeight: 14 },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 15,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  clearBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    height: 44,
     borderWidth: 1,
-    borderColor: '#DDDDDD',
+    borderColor: '#2541be',
+    borderRadius: 5,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  resetBtnText: { fontSize: 14, color: '#666666', fontWeight: '600' },
+  clearBtnText: { fontSize: 14, fontWeight: '700', color: '#2541be', lineHeight: 22 },
   applyBtn: {
-    flex: 2,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#0066CC',
+    flex: 1,
+    height: 44,
+    backgroundColor: '#2541be',
+    borderRadius: 5,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  applyBtnText: { fontSize: 14, color: '#FFFFFF', fontWeight: '700' },
+  applyBtnText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', lineHeight: 22 },
+  homeIndicator: {
+    width: 133,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#000000',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+    opacity: 0.2,
+  },
+  // FilterChipRow compat
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, backgroundColor: '#e8e9f0' },
+  chipActive: { backgroundColor: '#2541be' },
+  chipText: { fontSize: 12, color: '#424b7a', fontWeight: '500' },
+  chipTextActive: { color: '#FFFFFF' },
 });
 
 export default SortFilterSheet;

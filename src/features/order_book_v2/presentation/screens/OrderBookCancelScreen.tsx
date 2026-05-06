@@ -57,6 +57,7 @@ const OrderBookCancelScreen: React.FC<Props> = ({ route, navigation }) => {
   // Editable fields for modify
   const [modifiedQuantity, setModifiedQuantity] = useState(String(order.orderQuantity));
   const [modifiedPrice, setModifiedPrice] = useState(String(order.orderPrice));
+  const [isSelected, setIsSelected] = useState(false);
 
   const symbolName =
     order.instrumentIdentity.lsSymbol ?? order.instrumentIdentity.lssymbol ?? 'N/A';
@@ -175,157 +176,318 @@ const OrderBookCancelScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [isModify, symbolName, modifiedQuantity, modifiedPrice, buildOrderRequest, dispatch]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Market Status Banner */}
-      {marketStatus && (
-        <View style={[styles.marketStatusBanner,
-          marketStatus.statusCode === 'OPEN' ? styles.marketOpen : styles.marketClosed
-        ]}>
-          <Text style={styles.marketStatusText}>
-            Market: {marketStatus.statusCode} · {marketStatus.exchangeId}
-          </Text>
-        </View>
-      )}
-
-      {/* Order Summary Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Order Summary</Text>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Symbol</Text>
-          <Text style={styles.value}>{symbolName}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Direction</Text>
-          <Text style={[styles.value, isBuy ? styles.buyColor : styles.sellColor]}>
-            {isBuy ? 'BUY' : 'SELL'}
-          </Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Exchange</Text>
-          <Text style={styles.value}>{order.exchangeIdentity.exchangeId}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Product</Text>
-          <Text style={styles.value}>{order.productDescription ?? 'Cash'}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.label}>Order No.</Text>
-          <Text style={styles.value}>{order.exchangeOrderNumber}</Text>
-        </View>
-      </View>
-
-      {/* Modify Form (only shown for modify action) */}
-      {isModify && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Modify Order</Text>
-
-          <Text style={styles.fieldLabel}>Quantity</Text>
-          <TextInput
-            style={styles.input}
-            value={modifiedQuantity}
-            onChangeText={setModifiedQuantity}
-            keyboardType="numeric"
-            placeholder="Enter quantity"
-            accessibilityLabel="Quantity input"
-          />
-
-          <Text style={styles.fieldLabel}>Price (₹)</Text>
-          <TextInput
-            style={styles.input}
-            value={modifiedPrice}
-            onChangeText={setModifiedPrice}
-            keyboardType="decimal-pad"
-            placeholder="Enter price"
-            accessibilityLabel="Price input"
-          />
-        </View>
-      )}
-
-      {/* Error */}
-      {error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : null}
-
-      {/* Action Button */}
-      <TouchableOpacity
-        style={[styles.actionBtn, isLoading && styles.actionBtnDisabled]}
-        onPress={handleConfirm}
-        disabled={isLoading}
-        accessibilityLabel={isModify ? 'Modify order' : 'Cancel order'}
+    <View style={styles.outerContainer}>
+      {/* Scrollable content */}
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
-        {isLoading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text style={styles.actionBtnText}>
-            {isModify ? 'Modify Order' : 'Cancel Order'}
-          </Text>
+        {/* Search bar + Filter */}
+        <View style={styles.searchRow}>
+          <View style={styles.searchInputContainer}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search"
+              placeholderTextColor="#a0a5bd"
+              value={symbolName}
+              editable={false}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.filterBtn}
+            onPress={() => console.log('Filter – not implemented')}
+            accessibilityLabel="Filter orders"
+          >
+            <Text style={styles.filterIcon}>⚙</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Select All row */}
+        <View style={styles.selectAllRow}>
+          <TouchableOpacity
+            style={[styles.checkbox, isSelected && styles.checkboxChecked]}
+            onPress={() => setIsSelected((v) => !v)}
+            accessibilityLabel="Select all"
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: isSelected }}
+          >
+            {isSelected && <Text style={styles.checkboxTick}>✓</Text>}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setIsSelected((v) => !v)}>
+            <Text style={styles.selectAllText}>Select All</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Order card */}
+        <View style={styles.orderCard}>
+          {/* Row 1: direction chip + qty | time */}
+          <View style={styles.cardTopRow}>
+            <View style={styles.cardTopLeft}>
+              <TouchableOpacity
+                style={[styles.checkbox, isSelected && styles.checkboxChecked]}
+                onPress={() => setIsSelected((v) => !v)}
+                accessibilityLabel="Select order"
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isSelected }}
+              >
+                {isSelected && <Text style={styles.checkboxTick}>✓</Text>}
+              </TouchableOpacity>
+              <View style={[styles.directionChip, isBuy ? styles.buyChip : styles.sellChip]}>
+                <Text style={[styles.directionText, isBuy ? styles.buyText : styles.sellText]}>
+                  {isBuy ? 'BUY' : 'SELL'}
+                </Text>
+              </View>
+              <Text style={styles.qtyText}>
+                {order.tradedQuantity} / {order.orderQuantity} Qty
+              </Text>
+            </View>
+            <Text style={styles.orderStatus}>{order.orderStatus}</Text>
+          </View>
+          {/* Card body */}
+          <View style={styles.cardBody}>
+            <View style={styles.cardBodyRow}>
+              <Text style={styles.symbolText} numberOfLines={1}>{symbolName}</Text>
+              <Text style={styles.priceText}>
+                {order.orderPrice > 0
+                  ? order.orderPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })
+                  : 'MKT'}
+              </Text>
+            </View>
+            <View style={styles.cardBodyRow}>
+              <Text style={styles.infoText}>
+                {order.exchangeIdentity.exchangeId}
+                {order.productDescription ? `  |  ${order.productDescription}` : ''}
+                {order.orderPrice > 0 ? '  |  LIMIT' : '  |  MARKET'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.cardSeparator} />
+        </View>
+
+        {/* Modify form (only for modify action) */}
+        {isModify && (
+          <View style={styles.modifyCard}>
+            <Text style={styles.modifyTitle}>Modify Order</Text>
+            <Text style={styles.fieldLabel}>Quantity</Text>
+            <TextInput
+              style={styles.input}
+              value={modifiedQuantity}
+              onChangeText={setModifiedQuantity}
+              keyboardType="numeric"
+              placeholder="Enter quantity"
+              accessibilityLabel="Quantity input"
+            />
+            <Text style={styles.fieldLabel}>Price (₹)</Text>
+            <TextInput
+              style={styles.input}
+              value={modifiedPrice}
+              onChangeText={setModifiedPrice}
+              keyboardType="decimal-pad"
+              placeholder="Enter price"
+              accessibilityLabel="Price input"
+            />
+          </View>
         )}
-      </TouchableOpacity>
-    </ScrollView>
+
+        {/* Market status */}
+        {marketStatus && (
+          <View style={[styles.marketBanner,
+            marketStatus.statusCode === 'OPEN' ? styles.marketOpen : styles.marketClosed
+          ]}>
+            <Text style={styles.marketText}>
+              Market: {marketStatus.statusCode} · {marketStatus.exchangeId}
+            </Text>
+          </View>
+        )}
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      </ScrollView>
+
+      {/* Fixed bottom action button – Figma style */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.actionBtn, isLoading && styles.actionBtnDisabled]}
+          onPress={handleConfirm}
+          disabled={isLoading}
+          accessibilityLabel={isModify ? 'Modify order' : 'Cancel order'}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.actionBtnText}>
+              {isModify ? 'Modify Order' : 'Cancel Orders'}
+            </Text>
+          )}
+        </TouchableOpacity>
+        <View style={styles.homeIndicator} />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F6FA' },
-  contentContainer: { padding: 16, paddingBottom: 32 },
+  outerContainer: { flex: 1, backgroundColor: '#f6f6f6' },
+  container: { flex: 1 },
+  contentContainer: { padding: 16, paddingBottom: 100 },
 
-  marketStatusBanner: {
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 12,
+  // Search bar
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    height: 44,
+    marginBottom: 16,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#f1f1f1',
+    borderRadius: 5,
+    height: 44,
+    paddingLeft: 13,
+  },
+  searchIcon: { fontSize: 14, marginRight: 8, color: '#a0a5bd' },
+  searchInput: { flex: 1, fontSize: 12, color: '#111e58', height: 44 },
+  filterBtn: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#f1f1f1',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterIcon: { fontSize: 16, color: '#424b7a' },
+
+  // Select All
+  selectAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#888fac',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#2541be',
+    borderColor: '#2541be',
+  },
+  checkboxTick: { fontSize: 14, color: '#FFFFFF', lineHeight: 18, fontWeight: '700' },
+  selectAllText: { fontSize: 12, color: '#111e58', fontWeight: '700', lineHeight: 17 },
+
+  // Order card
+  orderCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    marginBottom: 16,
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 0,
+  },
+  cardTopLeft: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  directionChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  buyChip: { backgroundColor: '#e2f4f1' },
+  sellChip: { backgroundColor: '#f5e8ea' },
+  directionText: { fontSize: 11, lineHeight: 14 },
+  buyText: { color: '#008675' },
+  sellText: { color: '#971b2f' },
+  qtyText: { fontSize: 12, fontWeight: '700', color: '#000000', lineHeight: 17 },
+  orderStatus: { fontSize: 10, color: '#424b7a', letterSpacing: -0.3 },
+  cardBody: {
+    backgroundColor: '#f7f6f2',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  cardBodyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  marketOpen: { backgroundColor: '#E6F9EE' },
-  marketClosed: { backgroundColor: '#FFF3E0' },
-  marketStatusText: { fontSize: 13, fontWeight: '500', color: '#333333' },
+  symbolText: { fontSize: 12, fontWeight: '700', color: '#000000', lineHeight: 22, flex: 1, marginRight: 8 },
+  priceText: { fontSize: 16, fontWeight: '700', color: '#000000', lineHeight: 22 },
+  infoText: { fontSize: 10, color: '#68697e', lineHeight: 14, letterSpacing: -0.3 },
+  cardSeparator: { height: 0.5, backgroundColor: '#e8e9f0', marginTop: 12 },
 
-  card: {
+  // Modify form
+  modifyCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#1A1A2E', marginBottom: 12 },
-
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#F0F0F0',
-  },
-  label: { fontSize: 13, color: '#666666' },
-  value: { fontSize: 13, color: '#1A1A2E', fontWeight: '500' },
-  buyColor: { color: '#009900' },
-  sellColor: { color: '#CC0000' },
-
-  fieldLabel: { fontSize: 13, color: '#666666', marginBottom: 6, marginTop: 10 },
+  modifyTitle: { fontSize: 14, fontWeight: '700', color: '#111e58', marginBottom: 12, lineHeight: 22 },
+  fieldLabel: { fontSize: 12, color: '#68697e', marginBottom: 6, marginTop: 10 },
   input: {
     borderWidth: 1,
-    borderColor: '#DDDDDD',
-    borderRadius: 6,
+    borderColor: '#f1f1f1',
+    borderRadius: 5,
     padding: 10,
     fontSize: 14,
-    color: '#1A1A2E',
-    backgroundColor: '#FAFAFA',
+    color: '#111e58',
+    backgroundColor: '#FFFFFF',
   },
 
-  errorText: { color: '#CC0000', fontSize: 13, textAlign: 'center', marginBottom: 12 },
+  // Market status
+  marketBanner: { padding: 10, borderRadius: 6, marginBottom: 12, alignItems: 'center' },
+  marketOpen: { backgroundColor: '#e2f4f1' },
+  marketClosed: { backgroundColor: '#fff3d4' },
+  marketText: { fontSize: 12, fontWeight: '500', color: '#111e58' },
 
+  errorText: { color: '#971b2f', fontSize: 12, textAlign: 'center', marginBottom: 12 },
+
+  // Bottom action bar – Figma style
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+    paddingTop: 0,
+    paddingBottom: 4,
+  },
   actionBtn: {
-    backgroundColor: '#CC0000',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: '#2541be',
+    borderRadius: 5,
+    height: 44,
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+    marginTop: 0,
   },
   actionBtnDisabled: { opacity: 0.6 },
-  actionBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
+  actionBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14, lineHeight: 22 },
+  homeIndicator: {
+    width: 133,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#000000',
+    alignSelf: 'center',
+    marginTop: 8,
+    opacity: 0.2,
+  },
 });
 
 export default OrderBookCancelScreen;

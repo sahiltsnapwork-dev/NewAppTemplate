@@ -1,7 +1,98 @@
 # API Execution Trace — OrderBookV2 Feature
-**Base URL:** `https://api.hdfcsec.com/v1`
-**Auth:** Bearer token via `Authorization` header (injected by Axios interceptor in `apiClient.ts`)
+**Base URL:** `http://localhost:9092` (Open API) / `https://api.hdfcsec.com/v1` (legacy APIs)
+**Auth:** Bearer token via `Authorization` header (injected by Axios interceptor in `apiClient.ts`);
+also injected as `mb.reqtoken` in the Open API request body.
 **Mock Mode:** `USE_MOCK_DATA = true` (overrides all API calls during development)
+
+---
+
+## 0. Fetch Order Book — Open API (PRIMARY) ✅
+| Field | Value |
+|---|---|
+| **Source** | `OrderBookApiDataSource.fetchOrderBookOpenApi` |
+| **Method** | POST |
+| **Path** | `/api/v1/book-services/OrderBook` |
+| **Final URL** | `http://localhost:9092/api/v1/book-services/OrderBook` |
+| **DTO** | `OrderBookOpenApiRequest` → `OrderBookOpenApiResponse` |
+| **Request Body** | `{ mb: { operationid: "orderBook", reqtoken: string, rq: { appinfo, deviceinfo, reqdata: { uid, actid, exch } } } }` |
+| **Response** | `{ mb: { rs: { statuscode: "200", resdata: { stat: "Ok", orders: OrderDto[] } } } }` |
+| **Mock File** | `mock/orderBookMock.ts → MOCK_ORDER_BOOK` |
+| **Mock Flag** | `MOCK_CONFIG.ORDER_BOOK.mockEnabled` |
+
+### Request Body Example
+```json
+{
+  "mb": {
+    "operationid": "orderBook",
+    "reqtoken": "<auth-token>",
+    "rq": {
+      "appinfo": { "appId": "ORDERBOOK_SERVICE", "appVersion": "1.0.0" },
+      "deviceinfo": { "deviceId": "MOBILE-APP", "deviceType": "MOBILE" },
+      "reqdata": { "uid": "qwertyt12dfgf", "actid": "GIRISH6-OTPUAT", "exch": "NSE" }
+    }
+  }
+}
+```
+
+### Response Body Example
+```json
+{
+  "mb": {
+    "operationid": "orderBook",
+    "reqtoken": null,
+    "rs": {
+      "statuscode": "200",
+      "response": "Success",
+      "resdata": {
+        "stat": "Ok",
+        "orders": [
+          {
+            "Prc": "2500.00", "OrderUserMessage": "Order executed successfully",
+            "ExpDate": "2026-03-31", "Qty": "100", "Nstordno": "123456789",
+            "OrderedTime": "25/02/2026 10:00:00", "Unfilledsize": "0",
+            "RejReason": "", "Prctype": "L", "Status": "Filled",
+            "Scripname": "RELIANCE INDUSTRIES", "stat": "Ok",
+            "Exseg": "NSE", "Sym": "500325", "ExchOrdID": "EXCH123456",
+            "ExchConfrmtime": "2026-02-25T10:00:00", "Pcode": "NRML",
+            "Dscqty": "0", "token": "12345", "Exchange": "NSE",
+            "Validity": "DAY", "Ordvaldate": "2026-02-25",
+            "accountId": "GIRISH6-OTPUAT", "Avgprc": "2500.00",
+            "Trgprc": "0", "Trantype": "BUY", "Trsym": "RELIANCE",
+            "Fillshares": "100", "user": "GIRISH6-OTPUAT"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+### Field Mapping: `OrderDto` → `OrderBookEntry`
+| API Field | Domain Field | Notes |
+|---|---|---|
+| `ExchOrdID` | `exchangeOrderNumber` | Exchange order identifier |
+| `Exchange` / `Exseg` | `exchangeIdentity.exchangeId` | Preferred: `Exchange` |
+| `Sym` | `instrumentIdentity.instrumentId` | Exchange symbol/token |
+| `Trsym` | `instrumentIdentity.lsSymbol` & `lssymbol` | Trading symbol |
+| `Scripname` | `instrumentIdentity.instrumentName` | Full instrument name |
+| `ExpDate` | `instrumentIdentity.expiryDate` | Derivatives expiry |
+| `Trantype` ("BUY"→1 / "SELL"→2) | `orderLegDetails.orderSide` | |
+| `Prctype` ("L"→1 / "M"→2 / "SL"→3 / "SL-M"→4) | `orderLegDetails.orderType` | |
+| `Validity` ("DAY"→1 / "IOC"→2 / "GTD"→3) | `orderLegDetails.orderValidity` | |
+| `Pcode` ("NRML"→1 / "MIS"→2 / "CNC"→3 / "CO"→4 / "BO"→5) | `orderLegDetails.product` | |
+| `accountId` | `tradingAccountDetails.tradingAccountNumber` | |
+| `Qty` (string) | `orderQuantity` | Parsed to number |
+| `Unfilledsize` (string) | `remainingQuantity` | Parsed to number |
+| `Fillshares` (string) | `tradedQuantity` | Parsed to number |
+| `Prc` (string) | `orderPrice` | Parsed to float |
+| `Trgprc` (string) | `triggerPrice` | Parsed to float |
+| `Dscqty` (string) | `disclosedQuantity` | Parsed to float |
+| `Avgprc` (string) | `averageTradePrice` | Parsed to float |
+| `OrderedTime` | `orderDateTime` | Format: "DD/MM/YYYY HH:mm:ss" |
+| `Status` | `orderStatus` | Human-readable status string |
+| `Status` (resolved) | `orderBookStatus` | "Open"/"Trigger Pending"→`OPEN`; "Filled"/"Cancelled"/"Rejected"→`CLOSED`; "GTD"→`GTD` |
+| `RejReason` | `rejectionReason` | Empty string mapped to `undefined` |
+| `Pcode` | `productDescription` | Product code string |
 
 ---
 

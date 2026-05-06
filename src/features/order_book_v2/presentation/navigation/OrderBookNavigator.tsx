@@ -33,9 +33,10 @@ const OrderBookNavigator: React.FC = () => {
       initialRouteName="OrderBook"
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: '#FFFFFF' },
-        headerTintColor: '#1A1A2E',
-        headerTitleStyle: { fontWeight: '600', fontSize: 16 },
+        headerStyle: { backgroundColor: '#001489' },
+        headerTintColor: '#FFFFFF',
+        headerTitleStyle: { fontWeight: '600', fontSize: 16, color: '#FFFFFF' },
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen

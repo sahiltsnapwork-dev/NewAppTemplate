@@ -16,6 +16,8 @@ export interface FetchOrderBookParams {
   accountSettlementType: number;
   status: OrderBookStatus;
   isAmoEnabled: boolean;
+  /** User ID for the Open API mb-wrapper request (defaults to tradingAccountNumber if omitted) */
+  uid?: string;
 }
 
 export interface FetchTradeBookParams {

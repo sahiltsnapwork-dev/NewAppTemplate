@@ -1,9 +1,10 @@
 // Main Order Book Screen
 // Source: order_book_screen_v2.dart → OrderBookScreenV2
-// Tabs: Order Book (Open/Closed/GTD) | Positions | Trade Book | Stock SIP | MF Order Book
+// Figma: 13306:73973, 13521:30796, 15050:81989, 15050:81651, 13891:48711
+// Tabs: Orderbook (Open/Closed) | Positions | Mutual Funds | IPO
 // State: useSelector/useDispatch + thunks
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -51,10 +52,12 @@ import PositionsList from '../screens/PositionsScreen';
 import TradeBookList from '../components/TradeBookList';
 import StockSipTab from '../components/StockSipTab';
 import OrderBookShimmer from '../components/OrderBookShimmer';
-import SortFilterButton from '../components/SortFilterButton';
+import SortFilterSheet from '../components/SortFilterSheet';
+import type { OrderBookFilters } from '../components/SortFilterSheet';
 
-const TAB_LABELS = ['Order Book', 'Positions', 'Trade Book', 'Stock SIP', 'MF Orders'];
-const ORDER_BOOK_TABS = ['Open', 'Closed', 'GTD'];
+// Figma: 4 main tabs – Orderbook | Positions | Mutual Funds | IPO
+const TAB_LABELS = ['Orderbook', 'Positions', 'Mutual Funds', 'IPO'];
+const ORDER_BOOK_TABS = ['Open', 'Closed'];
 
 // Placeholder account details – replace with auth store
 const ACCOUNT = { tradingAccountNumber: '12345678', accountSettlementType: 0 };
@@ -80,8 +83,73 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
   const sipData = useSelector(selectSipData);
   const sipLoading = useSelector(selectSipIsLoading);
 
-  const [orderBookSubTab, setOrderBookSubTab] = useState(0); // 0=Open, 1=Closed, 2=GTD
+  const [orderBookSubTab, setOrderBookSubTab] = useState(0); // 0=Open, 1=Closed
+  const [exchange, setExchange] = useState<'NSE' | 'BSE'>('NSE');
   const [refreshing, setRefreshing] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<OrderBookFilters>({
+    exchange: 'ALL', action: 'ALL', product: 'ALL', status: 'ALL', sortBy: 'Alphabetically : A-Z',
+  });
+
+  // ── Apply filters + sort ────────────────────────────────────────────────────
+  const applyFiltersAndSort = useCallback(
+    (orders: OrderBookEntry[]): OrderBookEntry[] => {
+      let result = [...orders];
+
+      // action: BUY / SELL
+      if (activeFilters.action !== 'ALL') {
+        const side = activeFilters.action === 'BUY' ? 1 : 2;
+        result = result.filter((o) => o.orderLegDetails.orderSide === side);
+      }
+      // product: MIS / CNC / NRML
+      if (activeFilters.product !== 'ALL') {
+        result = result.filter(
+          (o) => (o.productDescription ?? '').toUpperCase() === activeFilters.product.toUpperCase()
+        );
+      }
+      // status: Pending / Traded / Cancelled / Rejected
+      if (activeFilters.status !== 'ALL') {
+        result = result.filter(
+          (o) => o.orderStatus.toLowerCase() === activeFilters.status.toLowerCase()
+        );
+      }
+
+      // sort
+      const sym = (o: OrderBookEntry) =>
+        (o.instrumentIdentity.lsSymbol ?? o.instrumentIdentity.lssymbol ?? o.instrumentIdentity.instrumentId).toLowerCase();
+      switch (activeFilters.sortBy) {
+        case 'Alphabetically : A-Z':
+          result.sort((a, b) => sym(a).localeCompare(sym(b)));
+          break;
+        case 'Alphabetically : Z-A':
+          result.sort((a, b) => sym(b).localeCompare(sym(a)));
+          break;
+        case 'Order Value : high to low':
+          result.sort((a, b) => b.orderPrice * b.orderQuantity - a.orderPrice * a.orderQuantity);
+          break;
+        case 'Order Value : low to high':
+          result.sort((a, b) => a.orderPrice * a.orderQuantity - b.orderPrice * b.orderQuantity);
+          break;
+        case 'Quantity : high to low':
+          result.sort((a, b) => b.orderQuantity - a.orderQuantity);
+          break;
+        case 'Quantity : low to high':
+          result.sort((a, b) => a.orderQuantity - b.orderQuantity);
+          break;
+        case 'LTP : high To Low':
+          result.sort((a, b) => (b.averageTradePrice ?? b.orderPrice) - (a.averageTradePrice ?? a.orderPrice));
+          break;
+        case 'LTP : low to high':
+          result.sort((a, b) => (a.averageTradePrice ?? a.orderPrice) - (b.averageTradePrice ?? b.orderPrice));
+          break;
+      }
+      return result;
+    },
+    [activeFilters]
+  );
+
+  const filteredOpenOrders = useMemo(() => applyFiltersAndSort(openOrders), [applyFiltersAndSort, openOrders]);
+  const filteredClosedOrders = useMemo(() => applyFiltersAndSort(closedOrders), [applyFiltersAndSort, closedOrders]);
 
   // ── Initial Load ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -131,43 +199,39 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
 
   // ── Tab Switch ──────────────────────────────────────────────────────────────
   const handleTabSwitch = useCallback(
-    (tabIndex: 0 | 1 | 2 | 3 | 4) => {
+    (tabIndex: 0 | 1 | 2 | 3) => {
       dispatch(setActiveTab(tabIndex));
       if (tabIndex === 0 && openOrders.length === 0) loadOrderBook('OPEN');
       if (tabIndex === 1 && positions.length === 0) loadPositions();
-      if (tabIndex === 2 && tradeBook.length === 0) loadTradeBook();
-      if (tabIndex === 3 && sipData.length === 0) loadSip();
     },
-    [dispatch, openOrders.length, positions.length, tradeBook.length, sipData.length, loadOrderBook, loadPositions, loadTradeBook, loadSip]
+    [dispatch, openOrders.length, positions.length, loadOrderBook, loadPositions]
   );
 
   // ── Order Book Sub-tab Switch ───────────────────────────────────────────────
   const handleOrderBookSubTab = useCallback(
     (idx: number) => {
       setOrderBookSubTab(idx);
-      const statusMap: ('OPEN' | 'CLOSED' | 'GTD')[] = ['OPEN', 'CLOSED', 'GTD'];
+      const statusMap: ('OPEN' | 'CLOSED')[] = ['OPEN', 'CLOSED'];
       const status = statusMap[idx];
-      const ordersMap = [openOrders, closedOrders, gtdOrders];
+      const ordersMap = [openOrders, closedOrders];
       if (ordersMap[idx].length === 0) {
         loadOrderBook(status);
       }
     },
-    [openOrders, closedOrders, gtdOrders, loadOrderBook]
+    [openOrders, closedOrders, loadOrderBook]
   );
 
   // ── Pull to Refresh ─────────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     if (activeTab === 0) {
-      const statusMap: ('OPEN' | 'CLOSED' | 'GTD')[] = ['OPEN', 'CLOSED', 'GTD'];
+      const statusMap: ('OPEN' | 'CLOSED')[] = ['OPEN', 'CLOSED'];
       loadOrderBook(statusMap[orderBookSubTab]);
     } else if (activeTab === 1) {
       loadPositions();
-    } else if (activeTab === 2) {
-      loadTradeBook();
     }
     setRefreshing(false);
-  }, [activeTab, orderBookSubTab, loadOrderBook, loadPositions, loadTradeBook]);
+  }, [activeTab, orderBookSubTab, loadOrderBook, loadPositions]);
 
   // ── Row Tap Handlers ────────────────────────────────────────────────────────
   const handleOrderTap = useCallback(
@@ -194,12 +258,18 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
   // ── Render Tab Content ──────────────────────────────────────────────────────
   const renderTabContent = () => {
     if (activeTab === 0) {
-      // Order Book tab
+      const openCount = filteredOpenOrders.filter(o => o.exchangeIdentity.exchangeId === exchange).length;
+      const closedCount = filteredClosedOrders.filter(o => o.exchangeIdentity.exchangeId === exchange).length;
+      const subTabLabels = [
+        `Open${openCount > 0 ? ` (${openCount})` : ''}`,
+        `Closed${closedCount > 0 ? ` (${closedCount})` : ''}`,
+      ];
+      // Orderbook tab – Open / Closed sub-tabs
       return (
         <View style={styles.flex1}>
-          {/* Order Book Sub-tabs: Open | Closed | GTD */}
+          {/* Open/Closed sub-tab row (Figma underline style) */}
           <View style={styles.subTabRow}>
-            {ORDER_BOOK_TABS.map((label, idx) => (
+            {subTabLabels.map((label, idx) => (
               <TouchableOpacity
                 key={label}
                 style={[styles.subTab, orderBookSubTab === idx && styles.subTabActive]}
@@ -211,17 +281,9 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
                   style={[styles.subTabText, orderBookSubTab === idx && styles.subTabTextActive]}
                 >
                   {label}
-                  {idx === 0 && orderCount.openCount > 0
-                    ? ` (${orderCount.openCount})`
-                    : idx === 1 && orderCount.closedCount > 0
-                    ? ` (${orderCount.closedCount})`
-                    : idx === 2 && orderCount.gtdCount > 0
-                    ? ` (${orderCount.gtdCount})`
-                    : ''}
                 </Text>
               </TouchableOpacity>
             ))}
-            <SortFilterButton />
           </View>
 
           {isLoading ? (
@@ -232,7 +294,7 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.retryButton}
                 onPress={() =>
-                  loadOrderBook(['OPEN', 'CLOSED', 'GTD'][orderBookSubTab] as 'OPEN' | 'CLOSED' | 'GTD')
+                  loadOrderBook(['OPEN', 'CLOSED'][orderBookSubTab] as 'OPEN' | 'CLOSED')
                 }
               >
                 <Text style={styles.retryText}>Retry</Text>
@@ -240,22 +302,24 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : orderBookSubTab === 0 ? (
             <OpenOrdersTabView
-              orders={openOrders}
+              orders={filteredOpenOrders}
+              exchange={exchange}
+              onExchangeChange={setExchange}
               onRowTap={handleOrderTap}
               onCancelTap={handleCancelOrder}
               onModifyTap={handleModifyOrder}
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          ) : orderBookSubTab === 1 ? (
-            <ClosedOrdersTabView
-              orders={closedOrders}
+              onCancelAll={() => navigation.navigate('OrderBookCancel', { order: openOrders[0], action: 'cancel' })}
+              onFilterPress={() => setFilterVisible(true)}
               refreshing={refreshing}
               onRefresh={onRefresh}
             />
           ) : (
             <ClosedOrdersTabView
-              orders={gtdOrders}
+              orders={filteredClosedOrders}
+              exchange={exchange}
+              onExchangeChange={setExchange}
+              onRowTap={handleOrderTap}
+              onFilterPress={() => setFilterVisible(true)}
               refreshing={refreshing}
               onRefresh={onRefresh}
             />
@@ -281,33 +345,19 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     if (activeTab === 2) {
+      // Mutual Funds – placeholder
       return (
-        <TradeBookList
-          tradeBook={tradeBook}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
+        <View style={styles.placeholderContainer}>
+          <Text style={styles.placeholderText}>Mutual Funds coming soon</Text>
+        </View>
       );
     }
 
     if (activeTab === 3) {
-      return (
-        <StockSipTab
-          sips={sipData ?? []}
-          refreshing={sipLoading}
-          onRefresh={() => dispatch(fetchSipDataThunk(ACCOUNT.tradingAccountNumber))}
-          onViewSip={(sip) => console.log('View SIP', sip.sipReferenceNumber)}
-          onViewTrail={(sip) => console.log('View Trail', sip.sipReferenceNumber)}
-          onViewChildren={(sip) => console.log('View Children', sip.sipReferenceNumber)}
-        />
-      );
-    }
-
-    if (activeTab === 4) {
-      // MF Order Book – placeholder (feature boundary)
+      // IPO – placeholder
       return (
         <View style={styles.placeholderContainer}>
-          <Text style={styles.placeholderText}>MF Order Book coming soon</Text>
+          <Text style={styles.placeholderText}>IPO coming soon</Text>
         </View>
       );
     }
@@ -317,32 +367,40 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Main Tab Bar */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.mainTabRow}
-        contentContainerStyle={styles.mainTabContent}
-      >
-        {TAB_LABELS.map((label, idx) => (
-          <TouchableOpacity
-            key={label}
-            style={[styles.mainTab, activeTab === idx && styles.mainTabActive]}
-            onPress={() => handleTabSwitch(idx as 0 | 1 | 2 | 3 | 4)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: activeTab === idx }}
-          >
-            <Text
-              style={[styles.mainTabText, activeTab === idx && styles.mainTabTextActive]}
+      {/* Main Tab Bar – Figma pill style (white card, active = gradient button) */}
+      <View style={styles.mainTabWrapper}>
+        <View style={styles.mainTabRow}>
+          {TAB_LABELS.map((label, idx) => (
+            <TouchableOpacity
+              key={label}
+              style={[styles.mainTab, activeTab === idx && styles.mainTabActive]}
+              onPress={() => handleTabSwitch(idx as 0 | 1 | 2 | 3)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === idx }}
             >
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[styles.mainTabText, activeTab === idx && styles.mainTabTextActive]}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       {/* Tab Content */}
       <View style={styles.flex1}>{renderTabContent()}</View>
+
+      {/* Sort & Filter bottom sheet */}
+      <SortFilterSheet
+        visible={filterVisible}
+        currentFilters={activeFilters}
+        onApply={(f) => {
+          setActiveFilters(f);
+          if (f.exchange !== 'ALL') setExchange(f.exchange as 'NSE' | 'BSE');
+        }}
+        onDismiss={() => setFilterVisible(false)}
+      />
     </View>
   );
 };
@@ -350,64 +408,77 @@ const OrderBookScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F6FA',
+    backgroundColor: '#f6f6f6',
   },
   flex1: { flex: 1 },
 
-  // Main tabs
-  mainTabRow: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
-    flexGrow: 0,
+  // Main tab bar – Figma: grey wrapper, inner white card
+  mainTabWrapper: {
+    backgroundColor: '#f6f6f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  mainTabContent: {
-    paddingHorizontal: 8,
+  mainTabRow: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#f1f1f1',
+    borderRadius: 5,
+    padding: 0,
   },
   mainTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginRight: 4,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    borderRadius: 4,
   },
   mainTabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#0066CC',
+    backgroundColor: '#001489',
+    borderRadius: 5,
   },
   mainTabText: {
     fontSize: 14,
-    color: '#666666',
-    fontWeight: '400',
+    color: '#888fac',
+    lineHeight: 17,
   },
   mainTabTextActive: {
-    color: '#0066CC',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 
-  // Sub-tabs (Open/Closed/GTD)
+  // Sub-tabs (Open/Closed) – Figma: grey bg, centered, underline active
   subTabRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#f6f6f6',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 0,
+    gap: 40,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
-    paddingHorizontal: 8,
-    alignItems: 'center',
+    borderBottomColor: '#e8e9f0',
   },
   subTab: {
-    flex: 1,
-    paddingVertical: 10,
+    paddingBottom: 8,
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   subTabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#0066CC',
+    borderBottomColor: '#2a3569',
   },
   subTabText: {
-    fontSize: 13,
-    color: '#888888',
+    fontSize: 14,
+    color: '#888fac',
+    lineHeight: 22,
   },
   subTabTextActive: {
-    color: '#0066CC',
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#2a3569',
+    lineHeight: 22,
   },
 
   // Error
@@ -419,15 +490,15 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#CC0000',
+    color: '#971b2f',
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#0066CC',
+    backgroundColor: '#2541be',
     paddingHorizontal: 24,
     paddingVertical: 10,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   retryText: {
     color: '#FFFFFF',
@@ -443,7 +514,7 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 16,
-    color: '#999999',
+    color: '#888fac',
   },
 });
 

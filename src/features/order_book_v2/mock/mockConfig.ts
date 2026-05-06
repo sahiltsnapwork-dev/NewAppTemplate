@@ -37,7 +37,7 @@ export const MOCK_CONFIG: {
     | 'CONVERT_TO_DELIVERY'
     | 'SIP']: { mockEnabled: boolean; delayMs: number; mockError: string | null };
 } = {
-  ORDER_BOOK: { mockEnabled: true, delayMs: 500, mockError: null },
+  ORDER_BOOK: { mockEnabled: false, delayMs: 500, mockError: null },
   TRADE_BOOK: { mockEnabled: true, delayMs: 400, mockError: null },
   POSITIONS: { mockEnabled: true, delayMs: 600, mockError: null },
   MARKET_STATUS: { mockEnabled: true, delayMs: 200, mockError: null },

@@ -140,12 +140,12 @@ const OrderBookDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <DetailRow label="Direction" value={isBuy ? 'BUY' : 'SELL'} valueColor={isBuy ? '#009900' : '#CC0000'} />
           <DetailRow label="Qty" value={String(order.orderQuantity)} />
           <DetailRow label="Price" value={order.orderPrice > 0 ? `₹${order.orderPrice.toFixed(2)}` : 'MKT'} />
-          {order.triggerPrice && order.triggerPrice > 0 && (
-            <DetailRow label="Trigger" value={`₹${order.triggerPrice.toFixed(2)}`} />
+          {(order.triggerPrice ?? 0) > 0 && (
+            <DetailRow label="Trigger" value={`₹${order.triggerPrice!.toFixed(2)}`} />
           )}
           <DetailRow label="Traded Qty" value={String(order.tradedQuantity)} />
-          {order.averageTradePrice && order.averageTradePrice > 0 && (
-            <DetailRow label="Avg Price" value={`₹${order.averageTradePrice.toFixed(2)}`} />
+          {(order.averageTradePrice ?? 0) > 0 && (
+            <DetailRow label="Avg Price" value={`₹${order.averageTradePrice!.toFixed(2)}`} />
           )}
           <DetailRow label="Remaining" value={String(order.remainingQuantity)} />
           <DetailRow label="Order No." value={order.exchangeOrderNumber} />
